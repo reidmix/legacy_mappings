@@ -1,0 +1,29 @@
+LegacyMappings
+==============
+
+Creates an easy way to map column names from what you want to what your (legacy) database define.
+
+Install
+=======
+
+Put +legacy_mappings+ into your vendor/plugins directory
+
+Example
+=======
+
+  class LegacyTable < ActiveRecord::Table
+    uses_legacy_mappings :ContantizedColumnName => :name, :annoyingCamelCasedFlag => :flag
+  end
+
+You should then be able to set, access, and find by your new names:
+
+  l = LegacyTable.create!(:name => 'foo', :flag => true)
+  l.flag = false
+  l.name?                                                   #=> true
+  LegacyTable.find(:all, {:name => 'foo'})                  #=> l
+  LegacyTable.find_by_name('foo')                           #=> l
+
+Currently find only works with the hash version.  String, conditions array, and name bind conditions
+do not work (unless you want to contribute and add them, would be very cool to have.)
+
+Copyright (c) 2009 Reid MacDonald, released under the MIT license
