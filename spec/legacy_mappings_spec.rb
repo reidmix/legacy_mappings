@@ -8,7 +8,7 @@ class MockActiveRecord < ActiveRecord::Base
   
   def self.columns
     column_names.map do |name|
-      ActiveRecord::ConnectionAdapters::Column.new(name, nil)
+      ActiveRecord::ConnectionAdapters::Column.new(name.to_s, nil)
     end
   end
 end
@@ -18,7 +18,7 @@ end
 describe MockActiveRecord do
   it "has original column names and can sanitize_sql" do
     MockActiveRecord.column_names.should == [:id, :legacy_a, :legacy_b, :legacy_c]
-    MockActiveRecord.columns.map(&:name).should == [:id, :legacy_a, :legacy_b, :legacy_c]
+    MockActiveRecord.columns.map(&:name).should == %w[id legacy_a legacy_b legacy_c]
     MockActiveRecord.send(:sanitize_sql, :foo => 'bar').should == "`mocks`.`foo` = 'bar'"
   end
 end
@@ -144,14 +144,26 @@ describe ActiveRecord::LegacyMappings do
     end
     
     it "can get column (name) for original columns" do
-      MockActiveRecord.column_names.each do |column_name|
+      MockActiveRecord.column_names.map(&:to_s).each do |column_name|
+        @mock.column_for_attribute(column_name).name.should == column_name
+      end
+    end
+
+    it "cannot get column (name) for original columns with a symbol, leaves original alone" do
+      MockActiveRecord.column_names.map(&:to_s).each do |column_name|
         @mock.column_for_attribute(column_name).name.should == column_name
       end
     end
 
     it "can get column (name) for legacy mappings" do
       @mappings.each do |column_name, mapping_name|
-        @mock.column_for_attribute(mapping_name).name.should == column_name
+        @mock.column_for_attribute(mapping_name.to_s).name.should == column_name.to_s
+      end
+    end
+
+    it "can get column (name) for legacy mappings with a symbol" do
+      @mappings.each do |column_name, mapping_name|
+        @mock.column_for_attribute(mapping_name).name.should == column_name.to_s
       end
     end
   end

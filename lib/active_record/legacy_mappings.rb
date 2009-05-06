@@ -86,7 +86,7 @@ module ActiveRecord
 
     module InstanceMethods
       def column_for_attribute(name)
-        self.class.columns_hash[(self.legacy_mappings.index(name.to_sym) || name).to_sym]
+        self.class.columns_hash[(mapping = self.legacy_mappings.index(name.to_sym)) && mapping.to_s || name]
       end
     end
   end
