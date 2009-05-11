@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 class MockActiveRecord < ActiveRecord::Base
   set_table_name 'mocks'
   def self.column_names
-    [:id, :legacy_a, :legacy_b, :legacy_c]
+    %w[id legacy_a legacy_b legacy_c]
   end
   
   def self.columns
@@ -17,7 +17,7 @@ end
 
 describe MockActiveRecord do
   it "has original column names and can sanitize_sql" do
-    MockActiveRecord.column_names.should == [:id, :legacy_a, :legacy_b, :legacy_c]
+    MockActiveRecord.column_names.should == %w[id legacy_a legacy_b legacy_c]
     MockActiveRecord.columns.map(&:name).should == %w[id legacy_a legacy_b legacy_c]
     MockActiveRecord.send(:sanitize_sql, :foo => 'bar').should == "`mocks`.`foo` = 'bar'"
   end
@@ -75,6 +75,20 @@ describe ActiveRecord::LegacyMappings do
 
     def column_methods_for(column)
       ["#{column}=", "#{column}?", "#{column}_before_type_cast"].map(&:to_sym)
+    end
+  end
+
+  describe :column_names_with_legacy_mappings do
+    it "should be an array of strings" do
+      MockActiveRecord.column_names_with_legacy_mappings.should be_kind_of(Array)
+      MockActiveRecord.column_names_with_legacy_mappings.each do |c|
+        c.should be_kind_of(String)
+      end
+    end
+
+    it "should use a merge of legacy columns and mapped columns" do
+      MockActiveRecord.column_names_with_legacy_mappings.should ==
+        %w[id railsy_named_attribute created_on legacy_c]
     end
   end
 

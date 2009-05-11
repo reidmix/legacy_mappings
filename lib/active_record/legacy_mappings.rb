@@ -29,6 +29,12 @@ module ActiveRecord
         end
       end
 
+      def column_names_with_legacy_mappings
+        column_names.map do |c|
+          (mapping = legacy_mappings[c.to_sym]) && mapping.to_s || c
+        end
+      end
+
       def merge_conditions(*conditions)
         segments = []
 
